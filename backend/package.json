@@ -6,13 +6,13 @@
 	"main": "index.ts",
 	"type": "module",
 	"scripts": {
-  "start": "node build/index.js",
-  "dev": "tsx watch index.ts",
-  "dev:ts": "tsx watch index.ts",
-  "build": "tsc",
-  "typecheck": "tsc --noEmit",
-  "test": "echo \"Error: no test specified\" && exit 1"
-},
+		"start": "node build/index.js",
+		"dev": "tsx watch index.ts",
+		"dev:ts": "tsx watch index.ts",
+		"build": "tsc && pnpm --dir .. build:ui",
+		"typecheck": "tsc --noEmit",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
 	"author": "Mooenz",
 	"license": "MIT",
 	"dependencies": {
