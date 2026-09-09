@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import { Note, BodyNoteCliente } from '@/types';
+import { Note, BodyNoteCliente } from './types/index.js';
 
 const app = express();
 
