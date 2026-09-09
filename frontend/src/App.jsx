@@ -58,6 +58,28 @@ const App = () => {
         setNotes(notes.filter(n => n.id !== id))
       })
   }
+
+  const deleteNote = id => {
+    const note = notes.find(n => n.id === id)
+
+    if (window.confirm(`Are you sure you want to delete the note: "${note.content}"?`)) {
+      noteService
+        .deleteNote(id)
+        .then(() => {
+          setNotes(notes.filter(n => n.id !== id))
+          setErrorMessage(`Deleted note: ${note.content}`, false, true);
+        })
+        .catch(() => {
+          setErrorMessage(
+            `Note '${note.content}' was already removed from server`,
+            true,
+            true
+          )
+          setNotes(notes.filter(n => n.id !== id))
+        })
+    }
+  }
+
   const noteToShow = showAll ? notes : notes.filter((note) => note.important);
 
   return (
@@ -69,7 +91,7 @@ const App = () => {
 
       <ul>
         { noteToShow.map((note) => (
-          <Note key={ note.id } note={ note.content } important={ note.important } toggleImportance={ () => toggleImportanceOf(note.id) } />
+          <Note key={ note.id } content={ note.content } important={ note.important } id={note.id} toggleImportance={ () => toggleImportanceOf(note.id) } deleteNote={ () => deleteNote(note.id) } />
         )) }
       </ul>
 
