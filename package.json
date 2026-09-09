@@ -1,5 +1,13 @@
 {
-  "dependencies": {
-    "cors": "^2.8.5"
-  }
+	"name": "raiz-monorepo",
+	"private": true,
+	"packageManager": "pnpm@12.3.4",
+	"scripts": {
+		"dev": "pnpm --parallel --filter frontend --filter backend dev",
+		"dev:frontend": "pnpm --filter frontend dev",
+		"dev:backend": "pnpm --filter backend dev",
+		"build": "pnpm --filter frontend build",
+		"typecheck": "pnpm --filter frontend --filter backend typecheck",
+		"lint": "pnpm --filter frontend lint"
+	}
 }
