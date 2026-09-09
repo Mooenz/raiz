@@ -1,5 +1,5 @@
 import axios from 'axios';
-const baseUrl = '/api/notes';
+const baseUrl = import.meta.env.VITE_URL_BACKEND + '/api/notes';
 
 const getAll = () => {
 	const request = axios.get(baseUrl);

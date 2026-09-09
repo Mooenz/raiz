@@ -69,7 +69,7 @@ const App = () => {
 
       <ul>
         { noteToShow.map((note) => (
-          <Note key={ note.id } note={ note.content } toggleImportance={ () => toggleImportanceOf(note.id) } />
+          <Note key={ note.id } note={ note.content } important={ note.important } toggleImportance={ () => toggleImportanceOf(note.id) } />
         )) }
       </ul>
 
