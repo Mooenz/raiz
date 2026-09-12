@@ -1,6 +1,6 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import { Note, BodyNoteCliente } from './types/index.js';
+import { BodyNoteCliente } from './types/index.js';
 import NoteMongo from './models/note.js';
 
 const app = express();
@@ -43,7 +43,7 @@ app.delete('/api/notes/:id', ({ params: { id } }: Request<{ id: string }>, respo
 		});
 });
 
-app.post('/api/notes', ({ body }: Request<{}, unknown, BodyNoteCliente>, response, next) => {
+app.post('/api/notes', ({ body }: Request<unknown, unknown, BodyNoteCliente>, response, next) => {
 	if (typeof body.content !== 'string' || body.content.trim() === '') {
 		return response.status(400).json({
 			error: 'content missing',
@@ -86,7 +86,7 @@ app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
 });
 
-const errorHandler = (error: Error, request: Request, response: Response, next: Function) => {
+const errorHandler = (error: Error, request: Request, response: Response, next: NextFunction) => {
 	console.error(error.message);
 
 	if (error.name === 'CastError') {
