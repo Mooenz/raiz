@@ -7,8 +7,8 @@
 	"type": "module",
 	"scripts": {
 		"start": "node build/index.js",
-		"dev": "tsx watch index.ts",
-		"dev:ts": "tsx watch index.ts",
+		"dev": "tsx watch --env-file=.env index.ts",
+		"dev:ts": "tsx watch --env-file=.env index.ts",
 		"build": "tsc && pnpm --dir .. build:ui",
 		"typecheck": "tsc --noEmit",
 		"test": "echo \"Error: no test specified\" && exit 1"
@@ -17,7 +17,10 @@
 	"license": "MIT",
 	"dependencies": {
 		"cors": "^2.8.6",
-		"express": "^5.2.1"
+		"dotenv": "^17.4.2",
+		"express": "^5.2.1",
+		"mongodb": "^7.6.0",
+		"mongoose": "^9.9.5"
 	},
 	"devDependencies": {
 		"@types/cors": "^2.8.19",

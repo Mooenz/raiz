@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { Note, BodyNoteCliente } from './types/index.js';
+import NoteMongo from './models/note.js';
 
 const app = express();
 
@@ -8,91 +9,95 @@ app.use(express.json());
 app.use(express.static('dist'));
 app.use(cors());
 
-let notes: Note[] = [
-	{
-		id: 1,
-		content: 'HTML is easy',
-		important: true,
-	},
-	{
-		id: 2,
-		content: 'Browser can execute only JavaScript',
-		important: false,
-	},
-	{
-		id: 3,
-		content: 'GET and POST are the most important methods of HTTP protocol',
-		important: true,
-	},
-];
-
 app.get('/', (request: Request, response: Response) => {
 	response.send('<h1>Hello World!</h1>');
 });
 
 app.get('/api/notes', (request: Request, response: Response) => {
-	response.json(notes);
+	NoteMongo.find({}).then((notes) => {
+		response.json(notes);
+	});
 });
 
-app.get('/api/notes/:id', ({ params: { id } }: Request<{ id: string }>, response) => {
-	const idNumber = parseInt(id, 10);
-	const note = notes.find((note) => note.id === idNumber);
-	if (note) {
-		response.json(note);
-	} else {
-		response.status(404).end();
-	}
+app.get('/api/notes/:id', ({ params: { id } }: Request<{ id: string }>, response, next) => {
+	NoteMongo.findById(id)
+		.then((note) => {
+			if (note) {
+				response.json(note);
+			} else {
+				response.status(404).end();
+			}
+		})
+		.catch((error) => {
+			next(error);
+		});
 });
 
-app.delete('/api/notes/:id', ({ params: { id } }: Request<{ id: string }>, response) => {
-	const idNumber = parseInt(id, 10);
-	notes = notes.filter((note) => note.id !== idNumber);
-
-	response.status(204).end();
+app.delete('/api/notes/:id', ({ params: { id } }: Request<{ id: string }>, response, next) => {
+	NoteMongo.findByIdAndDelete(id)
+		.then(() => {
+			response.status(204).end();
+		})
+		.catch((error) => {
+			next(error);
+		});
 });
 
-const generateId = () => {
-	const maxId = notes.length > 0 ? Math.max(...notes.map((n) => n.id)) : 0;
-	return maxId + 1;
-};
-
-app.post('/api/notes', ({ body }: Request<{}, unknown, BodyNoteCliente>, response) => {
+app.post('/api/notes', ({ body }: Request<{}, unknown, BodyNoteCliente>, response, next) => {
 	if (typeof body.content !== 'string' || body.content.trim() === '') {
 		return response.status(400).json({
 			error: 'content missing',
 		});
 	}
 
-	const note: Note = {
-		id: generateId(),
+	const note = new NoteMongo({
 		content: body.content,
 		important: body.important ?? false,
-	};
+	});
 
-	notes = notes.concat(note);
-
-	return response.json(note);
+	return note
+		.save()
+		.then((saveNote) => {
+			response.json(saveNote);
+		})
+		.catch((error) => {
+			next(error);
+		});
 });
 
-app.put('/api/notes/:id', ({ params: { id } }: Request<{ id: string }>, response) => {
-	const idNumber = parseInt(id, 10);
-	const noteFindIndex = notes.findIndex((note) => note.id === idNumber);
+app.put('/api/notes/:id', ({ params: { id }, body }: Request<{ id: string }>, response, next) => {
+	const { content, important } = body as BodyNoteCliente;
 
-	if (noteFindIndex === -1) {
-		return response.status(404).end();
-	}
-
-	const updateNote = {
-		...notes[noteFindIndex],
-		important: !notes[noteFindIndex].important,
+	const note = {
+		content,
+		important,
 	};
 
-	notes[noteFindIndex] = updateNote;
-	return response.json(updateNote);
+	NoteMongo.findByIdAndUpdate(id, note, { returnDocument: 'after', runValidators: true, context: 'query' })
+		.then((updateNote) => {
+			response.json(updateNote);
+		})
+		.catch((error) => next(error));
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
 });
+
+const errorHandler = (error: Error, request: Request, response: Response, next: Function) => {
+	console.error(error.message);
+
+	if (error.name === 'CastError') {
+		return response.status(400).send({ error: 'malformatted id' });
+	}
+
+	if (error.name === 'ValidationError') {
+		return response.status(400).json({ error: error.message });
+	}
+
+	return next(error);
+};
+
+app.use(errorHandler);
